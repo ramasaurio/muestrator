@@ -1,0 +1,13 @@
+*.project
+*.pydevproject
+*.prefs
+*.pyc
+.idea
+
+drilling/test
+*.pyproj
+*.sln
+.vs/
+*.rar
+
+*.dxf
