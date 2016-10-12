@@ -2,17 +2,13 @@
 import numpy
 
 
-def writeDiameterFile(path, samplesByUg, drillcode, drilltol, ugvar, categVars=None, numericVars=None):
+def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, numericVars=None):
 
     outfile = open('data/' + path, 'w')
 
     # Se escribe el encabezado y el prototipo de fila del archivo
-    outheader = 'holeid,from,to,midx,midy,midz'
-    lineskel = '%s,%f,%f,%f,%f,%f'
-    if categVars is not None:
-        for categ in categVars:
-            outheader += ',' + categ
-            lineskel += ',%s'
+    outheader = 'holeid,from,to,midx,midy,midz,ug,pureza'
+    lineskel = '%s,%f,%f,%f,%f,%f,%s,%f'
     if numericVars is not None:
         for numvar in numericVars:
             outheader += ',' + numvar + 'prom'
@@ -20,31 +16,27 @@ def writeDiameterFile(path, samplesByUg, drillcode, drilltol, ugvar, categVars=N
             outheader += ',' + numvar + 'min'
             outheader += ',' + numvar + 'max'
             lineskel += ',%f,%f,%f,%f'
-    outheader += ',tipo,diametro\n'
-    lineskel += ',%s,%s\n'
+    if categVars is not None:
+        for categ in categVars:
+            outheader += ',' + categ + ',ratio'
+            lineskel += ',%s,%f'
+    outheader += ',tipo,ratio,diametro,ratio\n'
+    lineskel += ',%s,%f,%s,%f\n'
     outfile.write(outheader)
 
     for ug in samplesByUg:
         for samples, pureza in samplesByUg[ug]:
 
-            drilltype = [composite['drilltype'] for composite in samples]
             lengths = [composite.to_ - composite.from_ for composite in samples]
-            code = sum([length for cod, length in zip(drilltype, lengths) if cod == drillcode]) / sum(lengths)
-            if code < drilltol:
-                continue
+            totalLen = sum(lengths)
 
             midx = numpy.mean([composite.middlex for composite in samples])
             midy = numpy.mean([composite.middley for composite in samples])
             midz = numpy.mean([composite.middlez for composite in samples])
 
-            line = [samples[0].holeid, samples[0].from_, samples[-1].to_, midx, midy, midz, ug, pureza]
+            line = [samples[0].holeid, samples[0].from_, samples[-1].to_, midx, midy, midz, str(ug), pureza]
 
-            for sample in samples:
-                if sample[ugvar] == ug:
-                    line.extend(
-                        [int(sample['minty']), int(sample['alte']), int(sample['lito']), sample['dom'], sample['plan']])
-                    break
-
+            # Se calculan los valores medio, varianza, mínimo y máximo de las variables numéricas
             for var in numericVars:
                 values = [composite[var] for composite in samples if composite[var] >= 0]
                 if len(values) != 0:
@@ -56,26 +48,24 @@ def writeDiameterFile(path, samplesByUg, drillcode, drilltol, ugvar, categVars=N
                 else:
                     line.extend([0, 0, 0, 0])
 
-            samptype = [composite['samptype'] for composite in samples]
-            ddh = len([cod for cod in samptype if cod == 'DDH']) / len(samptype)
-            rc = len([cod for cod in samptype if cod == 'RC']) / len(samptype)
-            line.extend([ddh, rc])
-
-            # pq = len([cod for cod in drilltype if cod == 'PQ']) / len(drilltype)
-            # nq = len([cod for cod in drilltype if cod == 'NQ']) / len(drilltype)
-            # hq = len([cod for cod in drilltype if cod == 'HQ']) / len(drilltype)
-            # hq3 = len([cod for cod in drilltype if cod == 'HQ3']) / len(drilltype)
-            # line.extend([pq, nq, hq, hq3, 1-pq-nq-hq-hq3])
-
-            if drillcode == 'PQ':
-                codes = [code, 0, 0, 0]
-            elif drillcode == 'HQ':
-                codes = [0, code, 0, 0]
-            elif drillcode == 'HQ3':
-                codes = [0, 0, code, 0]
-            else:
-                codes = [0, 0, 0, code]
-            line.extend(codes)
+            categTypeVar = categVars + [typeVar, diameterVar]
+            # Se calcula el código de la variable categórica mayoritaria
+            for categVar in categTypeVar:
+                codes = {}
+                catVarInSamp = [composite[categVar] for composite in samples]
+                for code, length in zip(catVarInSamp, lengths):
+                    if code in codes:
+                        codes[code] += length
+                    else:
+                        codes[code] = length
+                maxCode = ''
+                maxValue = 0
+                for code in codes:
+                    if codes[code] > maxValue:
+                        maxCode = code
+                        maxValue = codes[code]
+                line.append(maxCode)
+                line.append(codes[maxCode] / totalLen)
 
             outfile.write(lineskel % tuple(line))
             outfile.flush()
