@@ -9,26 +9,32 @@ import math
 
 def run():
 
-    compositePath = 'data/muestras_disponibles_variabilidad.csv'
+    folder = 'ejercicio_0/'
+    outpath = 'potential_samples.csv'
 
-    compositesColumns = [('cut', float), ('minty', str), ('alte', str), ('lito', str), ('drilltype', str),
-                         ('clay', float), ('mo', float), ('uso', int), ('csr', float), ('plan', int), ('ugvar', int),
-                         ('samptype', str), ('spi', float), ('dom', int)]
+    compositePath = 'data/muestras_disponibles_variabilidad.csv'
+    categVars = ['minty', 'fase']
+    numericVars = ['cut', 'clay']
+    ugVar = 'fase'
+    typeVar = 'samptype'
+    diamVar = 'diametro'
+    categColumns = [(carvar, str) for carvar in categVars]
+    numerColumns = [(numvar, float) for numvar in numericVars]
+    compositesColumns = numerColumns + categColumns + [(typeVar, str), (diamVar, str)]
+
     composites = Composites(path=compositePath, holeid='holeid', middlex='midx', middley='midy', middlez='midz',
                             from_='from', to_='to', columns=compositesColumns, readComposites=True)
 
     drillholes = Drillholes.makeDrillholes(composites=composites)
-    setDrilholeType(drillholes)
+    setDrilholeType(drillholes, typeVar, diamVar)
 
-    soporte = 3  # largo en metros del soporte
-    tolerancia = 2  # soportes adicionales
-    pureza = 0.8  # mínimo de pureza en ug para considerar muestra
-    ugvar = 'ugvar'  # variable con la info de la ug
+    masa = 80
+    pureza = 0.8
 
-    samples = divideSamplesByLength(drillholes, 12, soporte, tolerancia)
-    completeSamples = selectCompleteSamples(samples)
-    samplesByUg = divideSamplesByUg(completeSamples, ugvar, pureza)
-    writeDiameterFile(folder + 'complete_samples_PQ.csv', samplesByUg, 'PQ', 0.8, ugvar)
+    samples = divideSamplesByLength(drillholes, masa)
+    completeSamples = selectCompleteSamples(samples, useVar='uso', typeVar=typeVar, use=True, ddh=True)
+    samplesByUg = divideSamplesByUg(completeSamples, ugVar, pureza)
+    writeDiameterFile(folder + outpath, samplesByUg, typeVar, diamVar, categVars, numericVars)
 
 # (path, samplesByUg, typeVar, diameterVar, categVars=None, numericVars=None)
 

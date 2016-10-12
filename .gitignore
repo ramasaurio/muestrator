@@ -3,6 +3,7 @@
 *.prefs
 *.pyc
 .idea
+modelo/
 
 drilling/test
 *.pyproj

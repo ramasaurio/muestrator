@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy
+massByDiameter = {'PQ': 6, 'HQ': 3, 'HQ3': 3, 'NQ': 1.8}
 
 
 def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, numericVars=None):
@@ -98,38 +99,32 @@ def divideSamplesByUg(samples, ugvar, purity):
     return samplesByUg
 
 
-def divideSamplesByLength(drillholes, length, support, tolerance):
-    sections = round(length / support + tolerance)
-    resultsamples = []
+def divideSamplesByLength(drillholes, targetMass, diameterVar):
+
+    resultSamples = []
 
     for drillhole in drillholes:
 
         composites = drillhole.composites
-        n = len(composites)
+        actualSample = [composites[0]]
+        actualMasses = [massByDiameter[actualSample[0][diameterVar]] * (actualSample[0].to_ - actualSample[0].from_)]
+        compsInDh = len(composites)
 
-        if n >= sections:
+        for i in range(compsInDh - 1):
+            counter = i + 1
+            while sum(actualMasses) < targetMass and counter < compsInDh:
 
-            for i in range(n - sections + 1):
-                auxsamples = composites[i:i + sections]
-                samplelength = auxsamples[-1].to_ - auxsamples[0].from_
+                masa = massByDiameter[composites[i][diameterVar]] * (composites[1].to_ - composites[1].from_)
+                actualMasses.append(masa)
+                actualSample.append(composites[i])
+                counter += 1
 
-                if samplelength < length + support * tolerance:
+                if sum(actualMasses) >= targetMass:
+                    resultSamples.append(composites[i])
+                    actualSample.pop(0)
+                    actualMasses.pop(0)
 
-                    if auxsamples[-1].to_ == composites[-1].to_ and samplelength >= length + support * tolerance / 2:
-                        resultsamples.append(auxsamples)
-                        continue
-
-                    for nexti in range(i + sections, len(composites)):
-                        auxsamples.append(composites[nexti])
-                        if auxsamples[-1].to_ - auxsamples[0].from_ >= length + support * tolerance:
-                            resultsamples.append(auxsamples)
-                            break
-                    else:
-                        continue
-                else:
-                    resultsamples.append(auxsamples)
-
-    return resultsamples
+    return resultSamples
 
 
 def selectCompleteSamples(samples, useVar='uso', typeVar='samptype', use=True, ddh=True):
