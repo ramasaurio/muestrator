@@ -16,6 +16,7 @@ def run():
     categVars = ['minty', 'fase']
     numericVars = ['cut', 'clay']
     ugVar = 'fase'
+    usoVar = 'uso'
     typeVar = 'samptype'
     diamVar = 'diametro'
     categColumns = [(carvar, str) for carvar in categVars]
@@ -31,8 +32,8 @@ def run():
     masa = 80
     pureza = 0.8
 
-    samples = divideSamplesByLength(drillholes, masa)
-    completeSamples = selectCompleteSamples(samples, useVar='uso', typeVar=typeVar, use=True, ddh=True)
+    samples = divideSamplesByLength(drillholes, masa, diamVar)
+    completeSamples = selectCompleteSamples(samples, useVar=usoVar, typeVar=typeVar, use=True, ddh=True)
     samplesByUg = divideSamplesByUg(completeSamples, ugVar, pureza)
     writeDiameterFile(folder + outpath, samplesByUg, typeVar, diamVar, categVars, numericVars)
 

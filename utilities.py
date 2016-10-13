@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import numpy
+
 massByDiameter = {'PQ': 6, 'HQ': 3, 'HQ3': 3, 'NQ': 1.8}
 
 
 def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, numericVars=None):
-
     outfile = open('data/' + path, 'w')
 
     # Se escribe el encabezado y el prototipo de fila del archivo
@@ -100,19 +100,23 @@ def divideSamplesByUg(samples, ugvar, purity):
 
 
 def divideSamplesByLength(drillholes, targetMass, diameterVar):
-
     resultSamples = []
 
     for drillhole in drillholes:
 
         composites = drillhole.composites
-        actualSample = [composites[0]]
-        actualMasses = [massByDiameter[actualSample[0][diameterVar]] * (actualSample[0].to_ - actualSample[0].from_)]
+
         compsInDh = len(composites)
 
         for i in range(compsInDh - 1):
             counter = i + 1
-            while sum(actualMasses) < targetMass and counter < compsInDh:
+            actualSample = [composites[counter - 1]]
+            actualMasses = [
+                massByDiameter[actualSample[counter - 1][diameterVar]] * (
+                    actualSample[counter - 1].to_ - actualSample[counter - 1].from_)]
+
+            while sum(actualMasses) < targetMass and counter < compsInDh \
+                    and composites[counter].from_ == actualSample[-1].to_:
 
                 masa = massByDiameter[composites[i][diameterVar]] * (composites[1].to_ - composites[1].from_)
                 actualMasses.append(masa)
@@ -128,7 +132,6 @@ def divideSamplesByLength(drillholes, targetMass, diameterVar):
 
 
 def selectCompleteSamples(samples, useVar='uso', typeVar='samptype', use=True, ddh=True):
-    # Este método se puede saltar si es que te da lo mismo el uso y el tipo (DDH/RC)
     completeSampleIndices = []
     for sample in samples:
 
