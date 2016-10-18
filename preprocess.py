@@ -148,3 +148,72 @@ def flagCompositesWithDrillholes(drillholes, composites, compPath, outPath, numV
 
     outfile.close()
     infile.close()
+
+
+# flagea la cruza entre el modelo de bloques y las muestras
+def flagCross(blockModel, composites, compPath, outPath, newVars, crossVars):
+
+    lenx, leny, lenz = 20, 20, 15
+    for block in blockModel:
+        xcenter = block.x - lenx / 2
+        ycenter = block.y - leny / 2
+        zcenter = block.z - lenz / 2
+        resx = xcenter % lenx
+        resy = ycenter % leny
+        resz = zcenter % lenz
+        break
+
+    # blocksByCoord = {}
+    # for block in blockModel:
+    #     disx = math.floor((block.x - resx) / lenx) * lenx + resx
+    #     disy = math.floor((block.y - resy) / leny) * leny + resy
+    #     disz = math.floor((block.z - resz) / lenz) * lenz + resz
+    #     blocksByCoord[(disx, disy, disz)] = block
+
+    blocksByCrossVar = {}
+    for crossVar in crossVars:
+        daux1 = {}
+        daux2 = {}
+        for block in blockModel.applyFilter('"' + crossVar + '" in [1, 2]'):
+            disx = math.floor((block.x - resx) / lenx) * lenx + resx
+            disy = math.floor((block.y - resy) / leny) * leny + resy
+            disz = math.floor((block.z - resz) / lenz) * lenz + resz
+            if block[crossVar] == 1:
+                daux1[(disx, disy, disz)] = block
+            else:
+                daux2[(disx, disy, disz)] = block
+        blocksByCrossVar[crossVar] = [daux1, daux2]
+
+    # se abren los archivos de lectura y escritura y se escribe el header
+    outfile = open(outPath, 'w')
+    infile = open(compPath, 'r')
+    header = infile.readline().replace('\n', '')
+    for newVar in newVars:
+        header += ',' + newVar
+    header += '\n'
+    outfile.write(header)
+
+    for c in composites:
+        line = infile.readline().replace('\n', '')
+
+        x, y, z = c.middlex, c.middley, c.middlez
+        disx = math.floor((x - resx) / lenx) * lenx + resx
+        disy = math.floor((y - resy) / leny) * leny + resy
+        disz = math.floor((z - resz) / lenz) * lenz + resz
+
+        for crossVar in crossVars:
+            if (disx, disy, disz) in blocksByCrossVar[crossVar][0]:
+                cross = '1'
+            elif (disx, disy, disz) in blocksByCrossVar[crossVar][1]:
+                cross = '2'
+            else:
+                cross = '0'
+
+            line += ',' + cross
+
+        line += '\n'
+        outfile.write(line)
+        outfile.flush()
+
+    outfile.close()
+    infile.close()

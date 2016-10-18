@@ -11,7 +11,7 @@ def run():
 
     folder = 'ejercicio_0/'
     outpath = 'potential_samples.csv'
-    compositePath = 'composites/original/cy16_spc_seleccion_all.csv'
+    compositePath = 'composites/original/composites.csv'
 
     categVars = ['minty', 'fase', 'claygroup']
     numericVars = ['cut', 'clay']
@@ -38,16 +38,33 @@ def run():
     samplesByUg = divideSamplesByUg(completeSamples, ugVar, pureza)
     writeDiameterFile(folder + outpath, samplesByUg, typeVar, diamVar, categVars, numericVars)
 
-
 if __name__ == '__main__':
 
-    compositePath = 'composites/original/cy16_spc_seleccion_all.csv'
-    collarPath = 'composites/original/collar.csv'
-    outPath = 'composites/original/composites.csv'
-    composites = Composites(path=compositePath, holeid='dhid', readComposites=True)
-    drillholes = Composites(path=collarPath, holeid='HOLEID', columns=[('Estado_Sondaje', str), ('Campana', str)],
-                            readComposites=True)
+    run()
 
-    flagCompositesWithDrillholes(drillholes, composites, compositePath, outPath,
-                                 catVarToFlag=['Estado_Sondaje', 'Campana'])
-    # run()
+
+# OLD CODE:
+# [origen: run]
+# para flaguear las variables 'Estado_Sondaje', 'Campana' en los compóstos
+# compositePath = 'composites/original/cy16_spc_seleccion_all.csv'
+# collarPath = 'composites/original/collar.csv'
+# outPath = 'composites/original/composites.csv'
+# composites = Composites(path=compositePath, holeid='dhid', readComposites=True)
+# drillholes = Composites(path=collarPath, holeid='HOLEID', columns=[('Estado_Sondaje', str), ('Campana', str)],
+#                         readComposites=True)
+# flagCompositesWithDrillholes(drillholes, composites, compositePath, outPath,
+#                              catVarToFlag=['Estado_Sondaje', 'Campana'])
+
+# [origen: run]
+# para flaguear el cruze en el semestre
+# blockPath = 'modelo/modelo_me_volator_dog.csv'
+# blockColumns = [('buffer_q3q4', int)]
+# blockModel = BlockModel(path=blockPath, x='xcentre', y='ycentre', z='zcentre', density='densidad',
+#                         columns=blockColumns, readBlocks=True)
+# compPath = 'composites/original/composites.csv'
+# composites = Composites(path=compPath, holeid='dhid', middlex='midx', middley='midy', middlez='midz',
+#                         readComposites=True)
+# outPath = 'composites/original/composites_flagq3q4.csv'
+# newVars = ['cross_q3q4']
+# crossVars = ['buffer_q3q4']
+# flagCross(blockModel, composites, compPath, outPath, newVars, crossVars)
