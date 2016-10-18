@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from block_model.controller.block_model import BlockModel
 from drillhole.controller.composites import Composites
 from drillhole.controller.drillholes import Drillholes
@@ -37,7 +38,6 @@ def run():
     samplesByUg = divideSamplesByUg(completeSamples, ugVar, pureza)
     writeDiameterFile(folder + outpath, samplesByUg, typeVar, diamVar, categVars, numericVars)
 
-# (path, samplesByUg, typeVar, diameterVar, categVars=None, numericVars=None)
 
 if __name__ == '__main__':
     run()

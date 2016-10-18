@@ -45,7 +45,7 @@ def setDrilholeType(drillholes, typeVar, diameterVar):
                 auxcompositessamp = []
 
 
-def flagComposites(blockModel, composites, compPath, outPath, catVarToFlag=None, numVarToFlag=None):
+def flagComposites(blockModel, composites, compPath, outPath, numVarToFlag=None, catVarToFlag=None):
 
     lenx, leny, lenz = 20, 20, 15
     for block in blockModel:

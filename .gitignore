@@ -4,7 +4,7 @@
 *.pyc
 .idea
 modelo/
-
+composites/
 drilling/test
 *.pyproj
 *.sln
