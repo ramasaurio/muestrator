@@ -4,7 +4,7 @@ import numpy
 massByDiameter = {'PQ': 6, 'HQ': 3, 'HQ3': 3, 'NQ': 1.8}
 
 
-def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, numericVars=None):
+def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, numericVars=None, crossVars=None):
     outfile = open('data/' + path, 'w')
 
     # Se escribe el encabezado y el prototipo de fila del archivo
@@ -21,8 +21,14 @@ def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, n
         for categ in categVars:
             outheader += ',' + categ + ',ratio'
             lineskel += ',%s,%f'
-    outheader += ',tipo,ratio,diametro,ratio\n'
-    lineskel += ',%s,%f,%s,%f\n'
+    outheader += ',tipo,ratio,diametro,ratio'
+    lineskel += ',%s,%f,%s,%f'
+    if crossVars is not None:
+        for crossVar in crossVars:
+            outheader += ',' + crossVar
+            lineskel += ',%d'
+    outheader += '\n'
+    lineskel += '\n'
     outfile.write(outheader)
 
     for ug in samplesByUg:
@@ -38,20 +44,50 @@ def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, n
             line = [samples[0].holeid, samples[0].from_, samples[-1].to_, midx, midy, midz, str(ug), pureza]
 
             # Se calculan los valores medio, varianza, mínimo y máximo de las variables numéricas
-            for var in numericVars:
-                values = [composite[var] for composite in samples if composite[var] >= 0]
-                if len(values) != 0:
-                    mean = numpy.mean(values)
-                    variance = numpy.var(values)
-                    minv = min(values)
-                    maxv = max(values)
-                    line.extend([mean, variance, minv, maxv])
-                else:
-                    line.extend([0, 0, 0, 0])
+            if numericVars is not None:
+                for var in numericVars:
+                    values = [composite[var] for composite in samples if composite[var] >= 0]
+                    if len(values) != 0:
+                        mean = numpy.mean(values)
+                        variance = numpy.var(values)
+                        minv = min(values)
+                        maxv = max(values)
+                        line.extend([mean, variance, minv, maxv])
+                    else:
+                        line.extend([0, 0, 0, 0])
 
-            categTypeVar = categVars + [typeVar, diameterVar]
             # Se calcula el código de la variable categórica mayoritaria
-            for categVar in categTypeVar:
+            if categVars is not None:
+                for categVar in categVars:
+                    codes = {}
+                    catVarInSamp = [composite[categVar] for composite in samples]
+                    for code, length in zip(catVarInSamp, lengths):
+                        if code in codes:
+                            codes[code] += length
+                        else:
+                            codes[code] = length
+                    maxCode = ''
+                    maxValue = 0
+                    for code in codes:
+                        if codes[code] > maxValue:
+                            maxCode = code
+                            maxValue = codes[code]
+                    line.append(maxCode)
+                    line.append(codes[maxCode] / totalLen)
+
+            # Se determina el contacto de la muestra con el volumen requerido
+            if crossVars is not None:
+                for crossVar in crossVars:
+                    crosses = [sample[crossVar] for sample in samples]
+                    if 1 in crosses:
+                        line.append(1)
+                    elif 2 in crosses:
+                        line.append(2)
+                    else:
+                        line.append(0)
+
+            # Se calcula la proporción de la variable diámetro y tipo
+            for categVar in [typeVar, diameterVar]:
                 codes = {}
                 catVarInSamp = [composite[categVar] for composite in samples]
                 for code, length in zip(catVarInSamp, lengths):
@@ -74,7 +110,7 @@ def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, n
     outfile.close()
 
 
-def divideSamplesByUg(samples, ugvar, purity):
+def divideSamplesByUg(samples, ugvar, purity, validUg):
     samplesByUg = {}
     for sample in samples:
 
@@ -90,7 +126,7 @@ def divideSamplesByUg(samples, ugvar, purity):
                 ugdict[ug] = length
         for ug in ugdict:
             ugdict[ug] /= totalLength
-            if ugdict[ug] >= purity:
+            if ug in validUg and ugdict[ug] >= purity:
                 if ug in samplesByUg:
                     samplesByUg[ug].append((sample, ugdict[ug]))
                 else:
@@ -105,6 +141,7 @@ def divideSamplesByLength(drillholes, targetMass, diameterVar):
     for drillhole in drillholes:
 
         composites = drillhole.composites
+        composites = [c for c in composites if c[diameterVar] in massByDiameter]
 
         compsInDh = len(composites)
 
