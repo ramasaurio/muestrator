@@ -5,7 +5,7 @@ massByDiameter = {'PQ': 6, 'HQ': 3, 'HQ3': 3, 'NQ': 1.8}
 
 
 def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, numericVars=None, crossVars=None):
-    outfile = open('data/' + path, 'w')
+    outfile = open(path, 'w')
 
     # Se escribe el encabezado y el prototipo de fila del archivo
     outheader = 'holeid,from,to,midx,midy,midz,ug,pureza'
@@ -21,12 +21,13 @@ def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, n
         for categ in categVars:
             outheader += ',' + categ + ',ratio'
             lineskel += ',%s,%f'
-    outheader += ',tipo,ratio,diametro,ratio'
-    lineskel += ',%s,%f,%s,%f'
     if crossVars is not None:
         for crossVar in crossVars:
             outheader += ',' + crossVar
             lineskel += ',%d'
+    outheader += ',tipo,ratio,diametro,ratio'
+    lineskel += ',%s,%f,%s,%f'
+
     outheader += '\n'
     lineskel += '\n'
     outfile.write(outheader)
@@ -103,7 +104,8 @@ def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, n
                         maxValue = codes[code]
                 line.append(maxCode)
                 line.append(codes[maxCode] / totalLen)
-
+            print(lineskel)
+            print(line)
             outfile.write(lineskel % tuple(line))
             outfile.flush()
 
@@ -144,44 +146,41 @@ def divideSamplesByLength(drillholes, targetMass, diameterVar):
         composites = [c for c in composites if c[diameterVar] in massByDiameter]
 
         compsInDh = len(composites)
+        if compsInDh > 0:
+            actualSample = [composites[0]]
+            initialMass = massByDiameter[composites[0][diameterVar]] * (composites[0].to_ - composites[0].from_)
+            actualMasses = [initialMass]
+            ind = 1
 
-        for i in range(compsInDh - 1):
-            counter = i + 1
-            actualSample = [composites[counter - 1]]
-            actualMasses = [
-                massByDiameter[actualSample[counter - 1][diameterVar]] * (
-                    actualSample[counter - 1].to_ - actualSample[counter - 1].from_)]
+            while sum(actualMasses) < targetMass and ind < compsInDh and composites[ind].from_ == actualSample[-1].to_:
 
-            while sum(actualMasses) < targetMass and counter < compsInDh \
-                    and composites[counter].from_ == actualSample[-1].to_:
-
-                masa = massByDiameter[composites[i][diameterVar]] * (composites[1].to_ - composites[1].from_)
+                masa = massByDiameter[composites[ind][diameterVar]] * (composites[ind].to_ - composites[ind].from_)
                 actualMasses.append(masa)
-                actualSample.append(composites[i])
-                counter += 1
+                actualSample.append(composites[ind])
+                ind += 1
 
                 if sum(actualMasses) >= targetMass:
-                    resultSamples.append(composites[i])
-                    actualSample.pop(0)
-                    actualMasses.pop(0)
+                    resultSamples.append(actualSample)
+                    actualSample = actualSample[1:] if len(actualSample) > 1 else []
+                    actualMasses = actualMasses[1:] if len(actualSample) > 1 else []
 
     return resultSamples
 
 
 def selectCompleteSamples(samples, useVar='uso', typeVar='samptype', use=True, ddh=True):
     completeSampleIndices = []
-    for sample in samples:
 
-        if sample[0][useVar] == 1 or not use:
+    for sample in samples:
+        if use and sample[0][useVar] != '':
             continue
 
         to_ = sample[0].to_
         for i in range(1, len(sample)):
 
-            if sample[i][useVar] == 1 or not use:
-                continue
-            if sample[i][typeVar] != 'DDH' or not ddh:
-                continue
+            if use and sample[i][useVar] != '':
+                break
+            if ddh and sample[i][typeVar] != 'DDH':
+                break
             if sample[i].from_ != to_:
                 break
             to_ = sample[i].to_

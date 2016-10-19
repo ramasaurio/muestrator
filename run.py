@@ -21,7 +21,7 @@ def run():
     categVars = ['mine', 'fase']
     numericVars = ['cut']
     crossVars = ['cross_q3q4']
-    ugVar = 'fase'
+    ugVar = 'mine'
     usoVar = 'uso_r'
     typeVar = 'drill'
     diamVar = 'diam'
@@ -45,10 +45,16 @@ def run():
     drillholes = Drillholes.makeDrillholes(composites=composites)
     setDrilholeType(drillholes, typeVar, diamVar)
 
+    print('comp totales', len(composites))
+    print('sondajes', len(drillholes))
     samples = divideSamplesByLength(drillholes, masa, diamVar)
+    print('divididos', len(samples))
     completeSamples = selectCompleteSamples(samples, useVar=usoVar, typeVar=typeVar, use=True, ddh=True)
+    print('completados', len(completeSamples))
     samplesByUg = divideSamplesByUg(completeSamples, ugVar, pureza, validUg)
+    print('ugeados', len(samplesByUg))
     writeDiameterFile(folder + outpath, samplesByUg, typeVar, diamVar, categVars, numericVars, crossVars)
+    print('escritos')
 
 if __name__ == '__main__':
 
