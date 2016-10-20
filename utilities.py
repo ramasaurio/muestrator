@@ -4,7 +4,8 @@ import numpy
 massByDiameter = {'PQ': 6, 'HQ': 3, 'HQ3': 3, 'NQ': 1.8}
 
 
-def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, mass, categVars=None, numericVars=None, crossVars=None):
+def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, mass,
+                      categVars=None, numericVars=None, crossVars=None, groupVars=None):
     outfile = open(path, 'w')
 
     # Se escribe el encabezado y el prototipo de fila del archivo
@@ -17,6 +18,10 @@ def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, mass, categVars=N
             outheader += ',' + numvar + 'min'
             outheader += ',' + numvar + 'max'
             lineskel += ',%f,%f,%f,%f'
+            if groupVars is not None:
+                if numvar in groupVars:
+                    outheader += ',' + numvar + 'group'
+                    lineskel += ',%s'
     if categVars is not None:
         for categ in categVars:
             outheader += ',' + categ + ',ratio'
@@ -55,8 +60,18 @@ def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, mass, categVars=N
                         minv = min(values)
                         maxv = max(values)
                         line.extend([mean, variance, minv, maxv])
+                        if groupVars is not None:
+                            if var in groupVars:
+                                for limit, value in groupVars[var]:
+                                    if mean < limit:
+                                        line.append(value)
+                                        break
+                                else:
+                                    line.append('No Group')
                     else:
                         line.extend([0, 0, 0, 0])
+                        if groupVars is not None and var in groupVars:
+                            line.append('No Group')
 
             # Se calcula el código de la variable categórica mayoritaria
             if categVars is not None:

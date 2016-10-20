@@ -1,35 +1,36 @@
 from drillhole.controller.composites import Composites
-import itertools
 
 
 def run():
-
-    # -- Ejercicio 0 -- #
+    # -- Ejercicio 1 -- #
     # archivos
-    folder = 'ejercicio_0/'
-    compositePath = 'potential_samples3.csv'
-    outpath = 'seleccion.csv'
+    folder = 'ejercicio_1/'
+    compositePath = 'potential_samples_group.csv'
+    # outpath = 'seleccion_g_f19_.csv'
+    outpath = 'seleccion_g_f18_.csv'
 
     # Variables
     holeid = 'holeid'
     midx, midy, midz = 'midx', 'midy', 'midz'
     from_, to_ = 'from', 'to'
     numericVars = ['cut', 'clay', 'co3']
-    categVars = ['mine', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear', 'periodo_fy17',
-                 'cross_q3q4', 'diametro', 'tipo']
+    groupVars = ['clay', 'co3']
+    categVars = ['mine', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear',
+                 'cross_f18', 'cross_f19', 'diametro', 'tipo']
 
     # Filtros
     f1 = '0.7 <= "cutprom" <= 1.1'
     filters = f1,
 
     # Prioridades
-    p1 = 'cross_q3q4', ['1', '2']
+    # p1 = 'cross_f19', ['1', '2']
+    p1 = 'cross_f18', ['1', '2']
     p2 = 'Estado_Sondaje', ['Extraible', 'Modelable', 'Entregado', 'Perforado', 'En Perforacion', 'A Perforacion',
                             'Propuesto', 'Perdido']
     p3 = 'diametro', ['PQ', 'HQ', 'HQ3', 'NQ']
 
     priorities = p1, p2, p3
-    # -- Ejercicio 0 -- #
+    # -- Ejercicio 1 -- #
 
     categColumns = [(carvar, str) for carvar in categVars]
     numericColumns = []
@@ -38,6 +39,8 @@ def run():
         numericColumns.append((numvar + 'var', float))
         numericColumns.append((numvar + 'min', float))
         numericColumns.append((numvar + 'max', float))
+        if numvar in groupVars:
+            categColumns.append((numvar + 'group', str))
     compositesColumns = categColumns + numericColumns
 
     composites = Composites(path=folder + compositePath, holeid=holeid, middlex=midx, middley=midy, middlez=midz,
@@ -54,6 +57,7 @@ def exportSelectedSamples(compositePath, outpath, selectedSamples, idVars):
     header = fullHeader.replace('\n', '').split(',')
 
     holeid, from_ = idVars
+
     indHoleid = header.index(holeid)
     indfrom = header.index(from_)
 
@@ -66,7 +70,9 @@ def exportSelectedSamples(compositePath, outpath, selectedSamples, idVars):
     outfile = open(outpath, 'w')
     outfile.write(fullHeader)
     for comp in selectedSamples:
-        outfile.write(compsById[(comp.holeid, comp.from_)])
+
+        line = compsById[(comp.holeid, comp.from_)]
+        outfile.write(line)
         outfile.flush()
     outfile.close()
 
@@ -115,3 +121,61 @@ def selectSamples(composites, filters, priorities):
 
 if __name__ == '__main__':
     run()
+
+# -- Ejercicio 0 -- #
+# # archivos
+# folder = 'ejercicio_0/'
+# compositePath = 'potential_samples3.csv'
+# outpath = 'seleccion.csv'
+#
+# # Variables
+# holeid = 'holeid'
+# midx, midy, midz = 'midx', 'midy', 'midz'
+# from_, to_ = 'from', 'to'
+# numericVars = ['cut', 'clay', 'co3']
+# groupVars = ['clay', 'co3']
+# categVars = ['mine', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear', 'periodo_fy17',
+#              'cross_q3q4', 'diametro', 'tipo']
+#
+# # Filtros
+# f1 = '0.7 <= "cutprom" <= 1.1'
+# filters = f1,
+#
+# # Prioridades
+# p1 = 'cross_q3q4', ['1', '2']
+# p2 = 'Estado_Sondaje', ['Extraible', 'Modelable', 'Entregado', 'Perforado', 'En Perforacion', 'A Perforacion',
+#                         'Propuesto', 'Perdido']
+# p3 = 'diametro', ['PQ', 'HQ', 'HQ3', 'NQ']
+#
+# priorities = p1, p2, p3
+# -- Ejercicio 0 -- #
+
+# -- Ejercicio 1 -- #
+# # archivos
+# folder = 'ejercicio_1/'
+# compositePath = 'potential_samples_group.csv'
+# # outpath = 'seleccion_g_f19_.csv'
+# outpath = 'seleccion_g_f18_.csv'
+#
+# # Variables
+# holeid = 'holeid'
+# midx, midy, midz = 'midx', 'midy', 'midz'
+# from_, to_ = 'from', 'to'
+# numericVars = ['cut', 'clay', 'co3']
+# groupVars = ['clay', 'co3']
+# categVars = ['mine', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear',
+#              'cross_f18', 'cross_f19', 'diametro', 'tipo']
+#
+# # Filtros
+# f1 = '0.7 <= "cutprom" <= 1.1'
+# filters = f1,
+#
+# # Prioridades
+# # p1 = 'cross_f19', ['1', '2']
+# p1 = 'cross_f18', ['1', '2']
+# p2 = 'Estado_Sondaje', ['Extraible', 'Modelable', 'Entregado', 'Perforado', 'En Perforacion', 'A Perforacion',
+#                         'Propuesto', 'Perdido']
+# p3 = 'diametro', ['PQ', 'HQ', 'HQ3', 'NQ']
+#
+# priorities = p1, p2, p3
+# -- Ejercicio 1 -- #

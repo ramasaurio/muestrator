@@ -7,7 +7,12 @@ modelo/
 composites/
 lihfro/
 ejercicio_0/
+ejercicio_1/
+ejercicio_2/
+ejercicio_3/
 
+*.zip
+*.7z
 drilling/test
 *.pyproj
 *.sln

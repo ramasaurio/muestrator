@@ -8,10 +8,9 @@ from preprocess import *
 
 
 def run():
-
-    # -- EJERCICIO 0 -- #
-    folder = 'ejercicio_0/'
-    outpath = 'potential_samples3.csv'
+    # -- EJERCICIO 1 -- #
+    folder = 'ejercicio_1/'
+    outpath = 'potential_samples_group.csv'
     compositePath = 'composites/original/composites_flag_cross2.csv'
 
     holeid = 'dhid'
@@ -20,16 +19,19 @@ def run():
 
     categVars = ['mine', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear', 'periodo_fy17']
     numericVars = ['cut', 'clay', 'co3']
-    crossVars = ['cross_q3q4']
+    groups = {'clay': [(15, "Bajo"), (19, "Medio"), (100, "Alta")],
+              'co3': [(0.3, "Bajo"), (0.5, "Medio"), (100, "Alto")]}
+    crossVars = ['cross_f18', 'cross_f19']
     ugVar = 'mine'
     usoVars = ['uso_r', 'uso_t']
     typeVar = 'drill'
     diamVar = 'diam'
 
     validUg = ['SUCC', 'SUCV']
-    masa = 46
+    masa = 92
+    tMasa = 80
     pureza = 0.7
-    # -- EJERCICIO 0 -- #
+    # -- EJERCICIO 1 -- #
 
     categColumns = [(carvar, str) for carvar in categVars]
     numerColumns = [(numvar, float) for numvar in numericVars]
@@ -53,7 +55,7 @@ def run():
     print('completados', len(completeSamples))
     samplesByUg = divideSamplesByUg(completeSamples, ugVar, pureza, validUg)
     print('ugeados', len(samplesByUg))
-    writeDiameterFile(folder + outpath, samplesByUg, typeVar, diamVar, masa, categVars, numericVars, crossVars)
+    writeDiameterFile(folder + outpath, samplesByUg, typeVar, diamVar, tMasa, categVars, numericVars, crossVars, groups)
     print('escritos')
 
 if __name__ == '__main__':
@@ -126,3 +128,49 @@ if __name__ == '__main__':
 # outPath = 'composites/original/composites_flag_cross2.csv'
 # catVarToFlag = ['periodo_fy17']
 # flagCompositesWithBlocks(blockModel, composites, compPath, outPath, catVarToFlag=catVarToFlag)
+
+# -- EJERCICIO 0 -- #
+# folder = 'ejercicio_0/'
+# outpath = 'potential_samples3.csv'
+# compositePath = 'composites/original/composites_flag_cross2.csv'
+#
+# holeid = 'dhid'
+# midx, midy, midz = 'midx', 'midy', 'midz'
+# from_, to_ = 'from', 'to'
+#
+# categVars = ['mine', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear', 'periodo_fy17']
+# numericVars = ['cut', 'clay', 'co3']
+# groups = {'clay': [(15, "Bajo"), (19, "Medio"), (100, "Alta")],
+#           'co3': [(0.3, "Bajo"), (0.5, "Medio"), (100, "Alto")]}
+# crossVars = ['cross_q3q4']
+# ugVar = 'mine'
+# usoVars = ['uso_r', 'uso_t']
+# typeVar = 'drill'
+# diamVar = 'diam'
+#
+# validUg = ['SUCC', 'SUCV']
+# masa = 46
+# pureza = 0.7
+# -- EJERCICIO 0 -- #
+
+# -- EJERCICIO 1 -- #
+# folder = 'ejercicio_1/'
+# outpath = 'potential_samples1.csv'
+# compositePath = 'composites/original/composites_flag_cross2.csv'
+#
+# holeid = 'dhid'
+# midx, midy, midz = 'midx', 'midy', 'midz'
+# from_, to_ = 'from', 'to'
+#
+# categVars = ['mine', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear', 'periodo_fy17']
+# numericVars = ['cut', 'clay', 'co3']
+# crossVars = ['cross_f18', 'cross_f19']
+# ugVar = 'mine'
+# usoVars = ['uso_r', 'uso_t']
+# typeVar = 'drill'
+# diamVar = 'diam'
+#
+# validUg = ['SUCC', 'SUCV']
+# masa = 92
+# pureza = 0.7
+# -- EJERCICIO 1 -- #
