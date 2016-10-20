@@ -4,12 +4,12 @@ import numpy
 massByDiameter = {'PQ': 6, 'HQ': 3, 'HQ3': 3, 'NQ': 1.8}
 
 
-def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, numericVars=None, crossVars=None):
+def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, mass, categVars=None, numericVars=None, crossVars=None):
     outfile = open(path, 'w')
 
     # Se escribe el encabezado y el prototipo de fila del archivo
-    outheader = 'holeid,from,to,midx,midy,midz,ug,pureza'
-    lineskel = '%s,%f,%f,%f,%f,%f,%s,%f'
+    outheader = 'holeid,from,to,length,target_length,masa,midx,midy,midz,ug,pureza'
+    lineskel = '%s,%f,%f,%f,%f,%f,%f,%f,%f,%s,%f'
     if numericVars is not None:
         for numvar in numericVars:
             outheader += ',' + numvar + 'prom'
@@ -42,7 +42,8 @@ def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, n
             midy = numpy.mean([composite.middley for composite in samples])
             midz = numpy.mean([composite.middlez for composite in samples])
 
-            line = [samples[0].holeid, samples[0].from_, samples[-1].to_, midx, midy, midz, str(ug), pureza]
+            line = [samples[0].holeid, samples[0].from_, samples[-1].to_, samples[-1].to_- samples[0].from_,
+                    midx, midy, midz, str(ug), pureza]
 
             # Se calculan los valores medio, varianza, mínimo y máximo de las variables numéricas
             if numericVars is not None:
@@ -88,6 +89,8 @@ def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, n
                         line.append(0)
 
             # Se calcula la proporción de la variable diámetro y tipo
+            target_length = 0
+            total_mass = 0
             for categVar in [typeVar, diameterVar]:
                 codes = {}
                 catVarInSamp = [composite[categVar] for composite in samples]
@@ -96,16 +99,25 @@ def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, categVars=None, n
                         codes[code] += length
                     else:
                         codes[code] = length
+                    if categVar == diameterVar:
+                        if code in massByDiameter:
+                            total_mass += massByDiameter[code] * length
+
                 maxCode = ''
                 maxValue = 0
                 for code in codes:
                     if codes[code] > maxValue:
                         maxCode = code
                         maxValue = codes[code]
+
                 line.append(maxCode)
+                if maxCode in massByDiameter:
+                    target_length = mass / massByDiameter[maxCode]
                 line.append(codes[maxCode] / totalLen)
-            print(lineskel)
-            print(line)
+
+            line.insert(4, target_length)
+            line.insert(5, total_mass)
+
             outfile.write(lineskel % tuple(line))
             outfile.flush()
 
@@ -167,18 +179,30 @@ def divideSamplesByLength(drillholes, targetMass, diameterVar):
     return resultSamples
 
 
-def selectCompleteSamples(samples, useVar='uso', typeVar='samptype', use=True, ddh=True):
+def selectCompleteSamples(samples, useVars=None, typeVar='samptype', use=True, ddh=True):
     completeSampleIndices = []
 
     for sample in samples:
-        if use and sample[0][useVar] != '':
+
+        used = False
+
+        if useVars is not None:
+            for useVar in useVars:
+                if use and sample[0][useVar] != '':
+                    used = True
+        if used:
             continue
 
         to_ = sample[0].to_
         for i in range(1, len(sample)):
 
-            if use and sample[i][useVar] != '':
+            if useVars is not None:
+                for useVar in useVars:
+                    if use and sample[i][useVar] != '':
+                        used = True
+            if used:
                 break
+
             if ddh and sample[i][typeVar] != 'DDH':
                 break
             if sample[i].from_ != to_:

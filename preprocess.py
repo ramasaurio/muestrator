@@ -101,8 +101,12 @@ def flagCompositesWithBlocks(blockModel, composites, compPath, outPath, numVarTo
                     line += ',' + str(block[catVar])
 
         if block is None:
-            for i in range(len(numVarToFlag + catVarToFlag)):
-                line += ','
+            if numVarToFlag is not None:
+                for i in range(len(numVarToFlag)):
+                    line += ',-99'
+            if catVarToFlag is not None:
+                for i in range(len(catVarToFlag)):
+                    line += ',-99'
 
         line += '\n'
         outfile.write(line)
