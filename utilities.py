@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy
+from drillhole.controller.drillholes import Drillholes
 
-massByDiameter = {'PQ': 6, 'HQ': 3, 'HQ3': 3, 'NQ': 1.8}
+massByDiameter = {'PQ': 6, 'HQ': 3, 'HQ3': 3, 'NQ': 1.8, 'rechazo': 5}
 
 
 def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, mass,
@@ -47,7 +48,7 @@ def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, mass,
             midy = numpy.mean([composite.middley for composite in samples])
             midz = numpy.mean([composite.middlez for composite in samples])
 
-            line = [samples[0].holeid, samples[0].from_, samples[-1].to_, samples[-1].to_- samples[0].from_,
+            line = [samples[0].holeid, samples[0].from_, samples[-1].to_, samples[-1].to_ - samples[0].from_,
                     midx, midy, midz, str(ug), pureza]
 
             # Se calculan los valores medio, varianza, mínimo y máximo de las variables numéricas
@@ -78,20 +79,25 @@ def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, mass,
                 for categVar in categVars:
                     codes = {}
                     catVarInSamp = [composite[categVar] for composite in samples]
+                    totalLength = 0
                     for code, length in zip(catVarInSamp, lengths):
-                        if code in codes:
-                            codes[code] += length
-                        else:
-                            codes[code] = length
-                    maxCode = ''
+                        if code != '-99':
+                            if code in codes:
+                                codes[code] += length
+                            else:
+                                codes[code] = length
+                            totalLength += length
+                    maxCode = '-99'
                     maxValue = 0
                     for code in codes:
                         if codes[code] > maxValue:
                             maxCode = code
                             maxValue = codes[code]
                     line.append(maxCode)
-                    line.append(codes[maxCode] / totalLen)
-
+                    if maxCode != '-99':
+                        line.append(codes[maxCode] / totalLength)
+                    else:
+                        line.append(1)
             # Se determina el contacto de la muestra con el volumen requerido
             if crossVars is not None:
                 for crossVar in crossVars:
@@ -115,8 +121,12 @@ def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, mass,
                     else:
                         codes[code] = length
                     if categVar == diameterVar:
+
                         if code in massByDiameter:
-                            total_mass += massByDiameter[code] * length
+                            if code == 'rechazo':
+                                total_mass += massByDiameter['rechazo']
+                            else:
+                                total_mass += massByDiameter[code] * length
 
                 maxCode = ''
                 maxValue = 0
@@ -175,13 +185,20 @@ def divideSamplesByLength(drillholes, targetMass, diameterVar):
         compsInDh = len(composites)
         if compsInDh > 0:
             actualSample = [composites[0]]
-            initialMass = massByDiameter[composites[0][diameterVar]] * (composites[0].to_ - composites[0].from_)
+            code = composites[0][diameterVar]
+            if code == 'rechazo':
+                initialMass = massByDiameter[code]
+            else:
+                initialMass = massByDiameter[code] * (composites[0].to_ - composites[0].from_)
             actualMasses = [initialMass]
             ind = 1
 
             while sum(actualMasses) < targetMass and ind < compsInDh and composites[ind].from_ == actualSample[-1].to_:
-
-                masa = massByDiameter[composites[ind][diameterVar]] * (composites[ind].to_ - composites[ind].from_)
+                code = composites[ind][diameterVar]
+                if code == 'rechazo':
+                    masa = massByDiameter[code]
+                else:
+                    masa = massByDiameter[code] * (composites[ind].to_ - composites[ind].from_)
                 actualMasses.append(masa)
                 actualSample.append(composites[ind])
                 ind += 1
@@ -231,3 +248,36 @@ def selectCompleteSamples(samples, useVars=None, typeVar='samptype', use=True, d
         completeSamples.append(samples[index])
 
     return completeSamples
+
+
+# EN CONSTRUCCIÓN #
+def eliminarTraslape(samples1, samples2):
+
+    drills1 = Drillholes.makeDrillholes(composites=samples1)
+    drills2 = Drillholes.makeDrillholes(composites=samples2)
+
+    dhByHoleid1 = dict([(dh.holeid, dh.composites) for dh in drills1])
+    dhByHoleid2 = dict([(dh.holeid, dh.composites) for dh in drills2])
+
+    traslape = {}
+
+    if len(dhByHoleid1) < len(dhByHoleid2):
+        minDict = dhByHoleid1
+        maxDict = dhByHoleid2
+    else:
+        minDict = dhByHoleid2
+        maxDict = dhByHoleid1
+
+    for dhid in minDict:
+        if dhid in maxDict:
+            for c1 in dhByHoleid1[dhid]:
+                for c2 in dhByHoleid2[dhid]:
+                    if c1.from_< c2.to_ and c1.to_> c2.from_:
+                        if (c1.holeid, c1.from_) in traslape:
+                            traslape[(c1.holeid, c1.from_)].append(c2)
+                        else:
+                            traslape[(c1.holeid, c1.from_)] = [c2]
+                        if (c2.holeid, c2.from_) in traslape:
+                            traslape[(c2.holeid, c2.from_)].append(c1)
+                        else:
+                            traslape[(c2.holeid, c2.from_)] = [c1]

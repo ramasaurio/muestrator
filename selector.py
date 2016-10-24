@@ -2,12 +2,11 @@ from drillhole.controller.composites import Composites
 
 
 def run():
-    # -- Ejercicio 1 -- #
+    # -- Ejercicio 2 -- #
     # archivos
-    folder = 'ejercicio_1/'
-    compositePath = 'potential_samples_group.csv'
-    # outpath = 'seleccion_g_f19_.csv'
-    outpath = 'seleccion_g_f18_.csv'
+    folder = 'ejercicio_2/'
+    compositePath = 'potential_samples.csv'
+    outpath = 'seleccion_ejercicio_2.csv'
 
     # Variables
     holeid = 'holeid'
@@ -15,22 +14,21 @@ def run():
     from_, to_ = 'from', 'to'
     numericVars = ['cut', 'clay', 'co3']
     groupVars = ['clay', 'co3']
-    categVars = ['mine', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear',
-                 'cross_f18', 'cross_f19', 'diametro', 'tipo']
+    categVars = ['mine2', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear', 'periodo_fy17',
+                 'cross_q3q4', 'diametro', 'tipo', 'STARTDATE']
 
     # Filtros
-    f1 = '0.7 <= "cutprom" <= 1.1'
+    f1 = 'len("STARTDATE") > 2 and int("STARDATE"[-2:]) >= 15'
     filters = f1,
 
     # Prioridades
-    # p1 = 'cross_f19', ['1', '2']
-    p1 = 'cross_f18', ['1', '2']
+    p1 = 'cross_q3q4', ['1', '2']
     p2 = 'Estado_Sondaje', ['Extraible', 'Modelable', 'Entregado', 'Perforado', 'En Perforacion', 'A Perforacion',
                             'Propuesto', 'Perdido']
     p3 = 'diametro', ['PQ', 'HQ', 'HQ3', 'NQ']
 
     priorities = p1, p2, p3
-    # -- Ejercicio 1 -- #
+    # -- Ejercicio 2 -- #
 
     categColumns = [(carvar, str) for carvar in categVars]
     numericColumns = []
@@ -91,7 +89,9 @@ def selectSamples(composites, filters, priorities):
     for code_i in priorities[0][1]:
         for code_j in priorities[1][1]:
             for code_k in priorities[2][1]:
-                keys.append((code_i, code_j, code_k))
+                for code_l in priorities[3][1]:
+                    keys.append((code_i, code_j, code_k, code_l))
+                # keys.append((code_i, code_j, code_k))
 
     compByPriorities = {}
     for key in keys:
@@ -125,8 +125,8 @@ if __name__ == '__main__':
 # -- Ejercicio 0 -- #
 # # archivos
 # folder = 'ejercicio_0/'
-# compositePath = 'potential_samples3.csv'
-# outpath = 'seleccion.csv'
+# compositePath = 'potential_samples2.csv'
+# outpath = 'seleccion2.csv'
 #
 # # Variables
 # holeid = 'holeid'
@@ -134,11 +134,11 @@ if __name__ == '__main__':
 # from_, to_ = 'from', 'to'
 # numericVars = ['cut', 'clay', 'co3']
 # groupVars = ['clay', 'co3']
-# categVars = ['mine', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear', 'periodo_fy17',
+# categVars = ['mine2', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear', 'periodo_fy17',
 #              'cross_q3q4', 'diametro', 'tipo']
 #
 # # Filtros
-# f1 = '0.7 <= "cutprom" <= 1.1'
+# f1 = '0.6 <= "cutprom" <= 1.3'
 # filters = f1,
 #
 # # Prioridades
@@ -148,14 +148,14 @@ if __name__ == '__main__':
 # p3 = 'diametro', ['PQ', 'HQ', 'HQ3', 'NQ']
 #
 # priorities = p1, p2, p3
-# -- Ejercicio 0 -- #
+# # -- Ejercicio 0 -- #
 
 # -- Ejercicio 1 -- #
 # # archivos
 # folder = 'ejercicio_1/'
-# compositePath = 'potential_samples_group.csv'
-# # outpath = 'seleccion_g_f19_.csv'
-# outpath = 'seleccion_g_f18_.csv'
+# compositePath = 'potential_samples_group4.csv'
+# outpath = 'seleccion_f1819_dogtest.csv'
+# # outpath = 'seleccion_f18_dog.csv'
 #
 # # Variables
 # holeid = 'holeid'
@@ -163,19 +163,47 @@ if __name__ == '__main__':
 # from_, to_ = 'from', 'to'
 # numericVars = ['cut', 'clay', 'co3']
 # groupVars = ['clay', 'co3']
-# categVars = ['mine', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear',
+# categVars = ['mine2', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear',
 #              'cross_f18', 'cross_f19', 'diametro', 'tipo']
 #
 # # Filtros
-# f1 = '0.7 <= "cutprom" <= 1.1'
+# f1 = '0.6 <= "cutprom" <= 1.3'
 # filters = f1,
 #
 # # Prioridades
-# # p1 = 'cross_f19', ['1', '2']
-# p1 = 'cross_f18', ['1', '2']
+# p1 = 'cross_f19', ['1', '2', '0']
+# p2 = 'cross_f18', ['1', '2', '0']
+# p3 = 'Estado_Sondaje', ['Extraible', 'Modelable', 'Entregado', 'Perforado', 'En Perforacion', 'A Perforacion',
+#                         'Propuesto', 'Perdido']
+# p4 = 'diametro', ['PQ', 'HQ', 'HQ3', 'NQ']
+#
+# priorities = p1, p2, p3, p4
+# -- Ejercicio 1 -- #
+
+# -- Ejercicio 2 -- #
+# # archivos
+# folder = 'ejercicio_2/'
+# compositePath = 'potential_samples.csv'
+# outpath = 'seleccion_ejercicio_2.csv'
+#
+# # Variables
+# holeid = 'holeid'
+# midx, midy, midz = 'midx', 'midy', 'midz'
+# from_, to_ = 'from', 'to'
+# numericVars = ['cut', 'clay', 'co3']
+# groupVars = ['clay', 'co3']
+# categVars = ['mine2', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear', 'periodo_fy17',
+#              'cross_q3q4', 'diametro', 'tipo', 'STARTDATE']
+#
+# # Filtros
+# f1 = 'len("STARTDATE") > 2 and int("STARDATE"[-2:]) >= 15'
+# filters = f1,
+#
+# # Prioridades
+# p1 = 'cross_q3q4', ['1', '2']
 # p2 = 'Estado_Sondaje', ['Extraible', 'Modelable', 'Entregado', 'Perforado', 'En Perforacion', 'A Perforacion',
 #                         'Propuesto', 'Perdido']
 # p3 = 'diametro', ['PQ', 'HQ', 'HQ3', 'NQ']
 #
 # priorities = p1, p2, p3
-# -- Ejercicio 1 -- #
+# # -- Ejercicio 2 -- #

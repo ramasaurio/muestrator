@@ -119,7 +119,7 @@ def flagCompositesWithBlocks(blockModel, composites, compPath, outPath, numVarTo
 # Flagea desde una base de datos de sondaje las variables seleccionadas en los compósitos
 def flagCompositesWithDrillholes(drillholes, composites, compPath, outPath, numVarToFlag=None, catVarToFlag=None):
 
-    dhid = dict([(drillhole.holeid, drillhole) for drillhole in drillholes])
+    dhid = dict([(drillhole.holeid.replace('"', ''), drillhole) for drillhole in drillholes])
 
     outfile = open(outPath, 'w')
     infile = open(compPath, 'r')
