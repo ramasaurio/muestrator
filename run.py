@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# from block_model.controller.block_model import BlockModel
+from block_model.controller.block_model import BlockModel
 from drillhole.controller.composites import Composites
 from drillhole.controller.drillholes import Drillholes
 from utilities import divideSamplesByLength, divideSamplesByUg, selectCompleteSamples, writeDiameterFile
@@ -9,8 +9,8 @@ from preprocess import *
 
 def run():
     # -- EJERCICIO 2 -- #
-    folder = 'ejercicio_2/'
-    outpath = 'potential_samples2.csv'
+    folder = 'ejercicio_3/'
+    outpath = 'potential_samples_10kg_13y.csv'
     compositePath = 'composites/original/composites_fecha.csv'
 
     holeid = 'dhid'
@@ -23,15 +23,15 @@ def run():
               'co3': [(0.3, "Bajo"), (0.5, "Medio"), (100, "Alto")]}
     crossVars = ['cross_f18', 'cross_f19']
     ugVar = 'mine2'
-    usoVars = ['uso_r', 'uso_t']
+    usoVars = ['uso_r']
     typeVar = 'drill'
     diamVar = 'diam2'
     ddh = False
 
     validUg = ['SUCC-SUCV']
-    masa = 7.5
-    tMasa = 5
-    pureza = 0.7
+    masa = 15
+    tMasa = 10
+    pureza = 1
     # -- EJERCICIO 2 -- #
 
     categColumns = [(carvar, str) for carvar in categVars]
@@ -60,7 +60,17 @@ def run():
     print('escribios')
 
 if __name__ == '__main__':
-
+    # blockPath = 'modelo/modelo_anual_volator_dog.csv'
+    # blockColumns = [('buffer_fy18', int), ('buffer_fy19', int)]
+    # blockModel = BlockModel(path=blockPath, x='xcentre', y='ycentre', z='zcentre', density='densidad',
+    #                         columns=blockColumns, readBlocks=True)
+    # compPath = 'composites/original/composites_flagq3q4.csv'
+    # composites = Composites(path=compPath, holeid='dhid', middlex='midx', middley='midy', middlez='midz',
+    #                         readComposites=True)
+    # outPath = 'composites/original/composites_flag_q3q4_f18_f19_aer.csv'
+    # newVars = ['cross_f18', 'cross_f19']
+    # crossVars = ['buffer_fy18', 'buffer_fy19']
+    # flagCross(blockModel, composites, compPath, outPath, newVars, crossVars)
     run()
 
 
@@ -214,7 +224,7 @@ if __name__ == '__main__':
 
 # # -- EJERCICIO 2 -- #
 # folder = 'ejercicio_2/'
-# outpath = 'potential_samples2.csv'
+# outpath = 'potential_samples.csv'
 # compositePath = 'composites/original/composites_fecha.csv'
 #
 # holeid = 'dhid'
@@ -233,9 +243,9 @@ if __name__ == '__main__':
 # ddh = False
 #
 # validUg = ['SUCC-SUCV']
-# masa = 7.5
-# tMasa = 5
-# pureza = 0.7
+# masa = 15
+# tMasa = 10
+# pureza = 1
 # # -- EJERCICIO 2 -- #
 
 # -- EJERCICIO 0 -- #

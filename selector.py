@@ -4,9 +4,9 @@ from drillhole.controller.composites import Composites
 def run():
     # -- Ejercicio 2 -- #
     # archivos
-    folder = 'ejercicio_2/'
-    compositePath = 'potential_samples.csv'
-    outpath = 'seleccion_ejercicio_2.csv'
+    folder = 'ejercicio_3/'
+    compositePath = 'potential_samples_10kg_13y.csv'
+    outpath = 'seleccion_ejercicio_3.csv'
 
     # Variables
     holeid = 'holeid'
@@ -14,21 +14,24 @@ def run():
     from_, to_ = 'from', 'to'
     numericVars = ['cut', 'clay', 'co3']
     groupVars = ['clay', 'co3']
-    categVars = ['mine2', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear', 'periodo_fy17',
-                 'cross_q3q4', 'diametro', 'tipo', 'STARTDATE']
+    categVars = ['mine2', 'alte', 'lito', 'fase', 'Estado_Sondaje', 'Campana', 'banco', 'fyear',
+                 'cross_f18', 'cross_f19', 'diametro', 'tipo', 'STARTDATE']
 
     # Filtros
-    f1 = 'len("STARTDATE") > 2 and int("STARDATE"[-2:]) >= 15'
-    filters = f1,
+    f1 = '0.6 <= "cutprom" <= 1.6'
+    f2 = 'int("STARTDATE".replace(\'"\',\'\')[-2:]) in [14, 15, 16]'
+    f3 = 'int("cross_f18") + int("cross_f19") > 0'
+
+    filters = f1, f2, f3
 
     # Prioridades
-    p1 = 'cross_q3q4', ['1', '2']
-    p2 = 'Estado_Sondaje', ['Extraible', 'Modelable', 'Entregado', 'Perforado', 'En Perforacion', 'A Perforacion',
+    p1 = 'cross_f18', ['1', '2', '0']
+    p2 = 'cross_f19', ['1', '2', '0']
+    p3 = 'Estado_Sondaje', ['Extraible', 'Modelable', 'Entregado', 'Perforado', 'En Perforacion', 'A Perforacion',
                             'Propuesto', 'Perdido']
-    p3 = 'diametro', ['PQ', 'HQ', 'HQ3', 'NQ']
-
+    # p4 = 'diametro', ['PQ', 'HQ', 'HQ3', 'NQ']
     priorities = p1, p2, p3
-    # -- Ejercicio 2 -- #
+    # -- Ejercicio 3 -- #
 
     categColumns = [(carvar, str) for carvar in categVars]
     numericColumns = []
@@ -89,9 +92,9 @@ def selectSamples(composites, filters, priorities):
     for code_i in priorities[0][1]:
         for code_j in priorities[1][1]:
             for code_k in priorities[2][1]:
-                for code_l in priorities[3][1]:
-                    keys.append((code_i, code_j, code_k, code_l))
-                # keys.append((code_i, code_j, code_k))
+                # for code_l in priorities[3][1]:
+                #     keys.append((code_i, code_j, code_k, code_l))
+                keys.append((code_i, code_j, code_k))
 
     compByPriorities = {}
     for key in keys:

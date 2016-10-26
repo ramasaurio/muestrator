@@ -2,7 +2,7 @@
 import numpy
 from drillhole.controller.drillholes import Drillholes
 
-massByDiameter = {'PQ': 6, 'HQ': 3, 'HQ3': 3, 'NQ': 1.8, 'rechazo': 5}
+massByDiameter = {'PQ': 6, 'HQ': 3, 'HQ3': 3, 'NQ': 1.8, 'rechazo': 10}
 
 
 def writeDiameterFile(path, samplesByUg, typeVar, diameterVar, mass,
@@ -184,16 +184,12 @@ def divideSamplesByLength(drillholes, targetMass, diameterVar):
 
         compsInDh = len(composites)
         if compsInDh > 0:
-            actualSample = [composites[0]]
-            code = composites[0][diameterVar]
-            if code == 'rechazo':
-                initialMass = massByDiameter[code]
-            else:
-                initialMass = massByDiameter[code] * (composites[0].to_ - composites[0].from_)
-            actualMasses = [initialMass]
-            ind = 1
 
-            while sum(actualMasses) < targetMass and ind < compsInDh and composites[ind].from_ == actualSample[-1].to_:
+            actualSample = []
+            actualMasses = []
+            ind = 0
+
+            while ind < compsInDh:
                 code = composites[ind][diameterVar]
                 if code == 'rechazo':
                     masa = massByDiameter[code]
@@ -206,7 +202,42 @@ def divideSamplesByLength(drillholes, targetMass, diameterVar):
                 if sum(actualMasses) >= targetMass:
                     resultSamples.append(actualSample)
                     actualSample = actualSample[1:] if len(actualSample) > 1 else []
-                    actualMasses = actualMasses[1:] if len(actualSample) > 1 else []
+                    actualMasses = actualMasses[1:] if len(actualMasses) > 1 else []
+
+    samplesToRemove = set()
+    for sample in resultSamples:
+        if len(sample) > 1:
+            for i in range(1, len(sample)):
+                if sample[i - 1].to_ != sample[i].from_:
+                    samplesToRemove.union(i)
+                    break
+
+    resultSamples = [resultSamples[i] for i in range(len(resultSamples)) if i not in samplesToRemove]
+
+            # actualSample = [composites[0]]
+            # code = composites[0][diameterVar]
+            # if code == 'rechazo':
+            #     initialMass = massByDiameter[code]
+            # else:
+            #     initialMass = massByDiameter[code] * (composites[0].to_ - composites[0].from_)
+            # actualMasses = [initialMass]
+            # ind = 1
+            #
+            # while sum(actualMasses) < targetMass and ind < compsInDh and composites[ind].from_ == actualSample[-1].to_:
+            #
+            #     code = composites[ind][diameterVar]
+            #     if code == 'rechazo':
+            #         masa = massByDiameter[code]
+            #     else:
+            #         masa = massByDiameter[code] * (composites[ind].to_ - composites[ind].from_)
+            #     actualMasses.append(masa)
+            #     actualSample.append(composites[ind])
+            #     ind += 1
+            #
+            #     if sum(actualMasses) >= targetMass:
+            #         resultSamples.append(actualSample)
+            #         actualSample = actualSample[1:] if len(actualSample) > 1 else []
+            #         actualMasses = actualMasses[1:] if len(actualMasses) > 1 else []
 
     return resultSamples
 
@@ -218,20 +249,29 @@ def selectCompleteSamples(samples, useVars=None, typeVar='samptype', use=True, d
 
         used = False
 
-        if useVars is not None:
+        if use and useVars is not None:
             for useVar in useVars:
-                if use and sample[0][useVar] != '':
+                if sample[0][useVar] != '' and sample[0][useVar] != 'NONE':
                     used = True
+        fecha = sample[0]['STARTDATE'].replace('"', '')
+        if len(fecha) == 0 or (len(fecha) > 2 and int(fecha[-2:]) < 13):
+            used = True
+
         if used:
             continue
 
         to_ = sample[0].to_
         for i in range(1, len(sample)):
 
-            if useVars is not None:
+            if use and useVars is not None:
                 for useVar in useVars:
-                    if use and sample[i][useVar] != '':
+                    if sample[i][useVar] != '' and sample[i][useVar] != 'NONE':
                         used = True
+
+            fecha = sample[i]['STARTDATE'].replace('"', '')
+            if len(fecha) == 0 or (len(fecha) > 2 and int(fecha[-2:]) < 13):
+                used = True
+
             if used:
                 break
 
